@@ -15,12 +15,12 @@ def get_latest_read_time(read_receipts, email):
     return pytz.UTC.localize(datetime.strptime(latest_read_time, "%Y-%m-%dT%H:%M:%S"))
 
 
-def is_read(c, email):
-    messages = c.messages.list()
+def is_read(conversation, email):
+    messages = conversation.messages.list()
     if not messages:
         return True
 
-    read_receipts = json.loads(c.attributes).get("read_receipts")
+    read_receipts = json.loads(conversation.attributes).get("read_receipts")
     if email not in read_receipts:
         return False
 
@@ -43,13 +43,13 @@ def is_read(c, email):
 #         "changed_on": "2022-01-26T08:48:27.317981+00:00",
 #     },
 # ]
-def get_status(c):
-    history = json.loads(c.attributes).get("ticket_history")
+def get_status(conversation):
+    history = json.loads(conversation.attributes).get("ticket_history")
     return history[-1]["status"] if len(history) >= 1 else None
 
 
-def is_participant(c, email):
-    participants_list = c.participants.list()
+def is_participant(conversation, email):
+    participants_list = conversation.participants.list()
     participant_emails = [participant.identity for participant in participants_list]
     return email in participant_emails
 
@@ -57,10 +57,10 @@ def is_participant(c, email):
 # A conversation should count as unread if BOTH of these are true:
 # 1. The user is a participant in the conversation
 # 2. The latest message in the conversation is unread
-def should_show_unread(c, email):
-    if not is_participant(c, email):
+def should_show_unread(conversation, email):
+    if not is_participant(conversation, email):
         return False
-    if is_read(c, email):
+    if is_read(conversation, email):
         return False
     return True
 
